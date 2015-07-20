@@ -1918,7 +1918,8 @@ angular.module('ui.grid')
    * Emits the sortChanged event whenever the sort criteria are changed.
    * @param {GridColumn} column Column to set the sorting on
    * @param {uiGridConstants.ASC|uiGridConstants.DESC} [direction] Direction to sort by, either descending or ascending.
-   *   If not provided, the column will iterate through the sort directions: ascending, descending, unsorted.
+   *   If not provided and the option reverseSortingOrder is false or omitted, the column will iterate through the sort directions: ascending, descending, unsorted.
+   *   If not provided and the option reverseSortingOrder is true, the column will iterate through the sort directions: descending, ascending, unsorted.
    * @param {boolean} [add] Add this column to the sorting. If not provided or set to `false`, the Grid will reset any existing sorting and sort
    *   by this column only
    * @returns {Promise} A resolved promise that supplies the column.
@@ -1952,19 +1953,22 @@ angular.module('ui.grid')
     }
 
     if (!direction) {
+      var firstDirection = this.options.reverseSortingOrder ? uiGridConstants.DESC : uiGridConstants.ASC;
+      var secondDirection = this.options.reverseSortingOrder ? uiGridConstants.ASC : uiGridConstants.DESC;
+
       // Figure out the sort direction
-      if (column.sort.direction && column.sort.direction === uiGridConstants.ASC) {
-        column.sort.direction = uiGridConstants.DESC;
+      if (column.sort.direction && column.sort.direction === firstDirection) {
+        column.sort.direction = secondDirection;
       }
-      else if (column.sort.direction && column.sort.direction === uiGridConstants.DESC) {
-        if ( column.colDef && column.suppressRemoveSort ){
-          column.sort.direction = uiGridConstants.ASC;
+      else if (column.sort.direction && column.sort.direction === secondDirection) {
+        if ( column.colDef && column.colDef.suppressRemoveSort ){
+          column.sort.direction = firstDirection;
         } else {
-          column.sort = {};
+          column.sort.direction = null;
         }
       }
       else {
-        column.sort.direction = uiGridConstants.ASC;
+        column.sort.direction = firstDirection;
       }
     }
     else {
